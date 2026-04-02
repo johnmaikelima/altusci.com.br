@@ -103,6 +103,11 @@ class AdminAnalyticsController {
         $stmt->execute([':from' => $dateFrom]);
         $top404 = $stmt->fetchAll();
 
+        // Últimos visitantes (com IP, página, dispositivo, horário)
+        $stmt = $db->prepare("SELECT page_url, ip_address, user_agent, device_type, status, created_at FROM analytics_pageviews WHERE created_at >= :from ORDER BY created_at DESC LIMIT 30");
+        $stmt->execute([':from' => $dateFrom]);
+        $recentVisitors = $stmt->fetchAll();
+
         $pageTitle = 'Analytics';
         $contentTemplate = BASE_PATH . '/templates/admin/analytics_content.php';
         include BASE_PATH . '/templates/layouts/admin.php';

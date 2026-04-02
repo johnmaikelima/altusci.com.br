@@ -285,3 +285,73 @@ function analyticsUrl(string $periodo, string $filtro): string {
     </div>
 </div>
 <?php endif; ?>
+
+<!-- Últimos Visitantes -->
+<?php if (!empty($recentVisitors)): ?>
+<div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mt-6">
+    <div class="p-6 border-b border-gray-100 flex items-center gap-3">
+        <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        </div>
+        <div>
+            <h3 class="text-lg font-bold text-gray-800">Últimos Visitantes</h3>
+            <p class="text-xs text-gray-500">Últimos 30 acessos no período selecionado</p>
+        </div>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Horário</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">IP</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Página</th>
+                    <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Dispositivo</th>
+                    <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Navegador</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                <?php foreach ($recentVisitors as $visitor):
+                    $browser = 'Outro';
+                    $ua = $visitor['user_agent'] ?? '';
+                    if (preg_match('/Edg\//i', $ua)) $browser = 'Edge';
+                    elseif (preg_match('/OPR|Opera/i', $ua)) $browser = 'Opera';
+                    elseif (preg_match('/Chrome/i', $ua)) $browser = 'Chrome';
+                    elseif (preg_match('/Firefox/i', $ua)) $browser = 'Firefox';
+                    elseif (preg_match('/Safari/i', $ua)) $browser = 'Safari';
+                    elseif (preg_match('/bot|crawl|spider/i', $ua)) $browser = 'Bot';
+
+                    $deviceIcon = match($visitor['device_type']) {
+                        'mobile' => 'M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z',
+                        'tablet' => 'M12 18h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z',
+                        default => 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+                    };
+                    $deviceLabel = match($visitor['device_type']) { 'mobile' => 'Mobile', 'tablet' => 'Tablet', default => 'Desktop' };
+                ?>
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-3 text-sm text-gray-600 whitespace-nowrap"><?= date('d/m H:i:s', strtotime($visitor['created_at'])) ?></td>
+                    <td class="px-6 py-3">
+                        <span class="font-mono text-sm text-gray-800"><?= e($visitor['ip_address']) ?></span>
+                    </td>
+                    <td class="px-6 py-3">
+                        <span class="text-sm text-gray-800 truncate block max-w-[250px]"><?= e($visitor['page_url']) ?></span>
+                    </td>
+                    <td class="px-6 py-3 text-center">
+                        <div class="flex items-center justify-center gap-1" title="<?= $deviceLabel ?>">
+                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="<?= $deviceIcon ?>"/></svg>
+                            <span class="text-xs text-gray-500"><?= $deviceLabel ?></span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-3 text-center">
+                        <span class="px-2 py-0.5 text-xs rounded-full font-medium <?= ($visitor['status'] ?? 'valid') === '404' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' ?>">
+                            <?= ($visitor['status'] ?? 'valid') === '404' ? '404' : 'OK' ?>
+                        </span>
+                    </td>
+                    <td class="px-6 py-3 text-sm text-gray-500"><?= e($browser) ?></td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+<?php endif; ?>
