@@ -11,16 +11,24 @@ class AdminAnalyticsController {
         $periodDays = in_array($period, ['7', '14', '30', '90', '365']) ? (int)$period : 30;
         $dateFrom = date('Y-m-d H:i:s', strtotime("-{$periodDays} days"));
 
+        // Filtro de tráfego: valid, 404, all
+        $filter = $_GET['filtro'] ?? 'valid';
+        if (!in_array($filter, ['valid', '404', 'all'])) $filter = 'valid';
+
+        $statusWhere = '';
+        if ($filter === 'valid') $statusWhere = " AND status = 'valid'";
+        elseif ($filter === '404') $statusWhere = " AND status = '404'";
+
         // Resumo geral
         $stats = [];
 
         // Total de pageviews no período
-        $stmt = $db->prepare("SELECT COUNT(*) FROM analytics_pageviews WHERE created_at >= :from");
+        $stmt = $db->prepare("SELECT COUNT(*) FROM analytics_pageviews WHERE created_at >= :from" . $statusWhere);
         $stmt->execute([':from' => $dateFrom]);
         $stats['pageviews'] = (int)$stmt->fetchColumn();
 
         // Visitantes únicos no período
-        $stmt = $db->prepare("SELECT COUNT(DISTINCT visitor_id) FROM analytics_pageviews WHERE created_at >= :from");
+        $stmt = $db->prepare("SELECT COUNT(DISTINCT visitor_id) FROM analytics_pageviews WHERE created_at >= :from" . $statusWhere);
         $stmt->execute([':from' => $dateFrom]);
         $stats['unique_visitors'] = (int)$stmt->fetchColumn();
 
@@ -45,13 +53,18 @@ class AdminAnalyticsController {
         $bounceSessions = (int)$stmt->fetchColumn();
         $stats['bounce_rate'] = $stats['sessions'] > 0 ? round(($bounceSessions / $stats['sessions']) * 100, 1) : 0;
 
+        // Contagem de 404s no período
+        $stmt = $db->prepare("SELECT COUNT(*) FROM analytics_pageviews WHERE created_at >= :from AND status = '404'");
+        $stmt->execute([':from' => $dateFrom]);
+        $stats['total_404'] = (int)$stmt->fetchColumn();
+
         // Páginas mais visitadas
-        $stmt = $db->prepare("SELECT page_url, COUNT(*) as views, COUNT(DISTINCT visitor_id) as unique_views FROM analytics_pageviews WHERE created_at >= :from GROUP BY page_url ORDER BY views DESC LIMIT 15");
+        $stmt = $db->prepare("SELECT page_url, status, COUNT(*) as views, COUNT(DISTINCT visitor_id) as unique_views FROM analytics_pageviews WHERE created_at >= :from" . $statusWhere . " GROUP BY page_url ORDER BY views DESC LIMIT 15");
         $stmt->execute([':from' => $dateFrom]);
         $topPages = $stmt->fetchAll();
 
         // Visitantes por dia (gráfico)
-        $stmt = $db->prepare("SELECT DATE(created_at) as date, COUNT(*) as views, COUNT(DISTINCT visitor_id) as visitors FROM analytics_pageviews WHERE created_at >= :from GROUP BY DATE(created_at) ORDER BY date ASC");
+        $stmt = $db->prepare("SELECT DATE(created_at) as date, COUNT(*) as views, COUNT(DISTINCT visitor_id) as visitors FROM analytics_pageviews WHERE created_at >= :from" . $statusWhere . " GROUP BY DATE(created_at) ORDER BY date ASC");
         $stmt->execute([':from' => $dateFrom]);
         $dailyData = $stmt->fetchAll();
 
@@ -59,11 +72,6 @@ class AdminAnalyticsController {
         $stmt = $db->prepare("SELECT device_type, COUNT(*) as total FROM analytics_sessions WHERE started_at >= :from GROUP BY device_type ORDER BY total DESC");
         $stmt->execute([':from' => $dateFrom]);
         $devices = $stmt->fetchAll();
-
-        // Referrers (de onde vêm os visitantes)
-        $stmt = $db->prepare("SELECT CASE WHEN referrer = '' THEN 'Direto / Bookmark' ELSE SUBSTR(referrer, 1, INSTR(referrer || '/', '/') + INSTR(SUBSTR(referrer, INSTR(referrer, '//') + 2) || '/', '/') + INSTR(referrer, '//')) END as source, COUNT(*) as total FROM analytics_sessions WHERE started_at >= :from GROUP BY source ORDER BY total DESC LIMIT 10");
-        $stmt->execute([':from' => $dateFrom]);
-        $referrers = $stmt->fetchAll();
 
         // Referrers simplificados (domínio)
         $stmt = $db->prepare("SELECT referrer, COUNT(*) as total FROM analytics_sessions WHERE started_at >= :from AND referrer != '' GROUP BY referrer ORDER BY total DESC LIMIT 10");
@@ -89,6 +97,11 @@ class AdminAnalyticsController {
         $stmt = $db->prepare("SELECT COUNT(DISTINCT visitor_id) FROM analytics_pageviews WHERE created_at >= datetime('now', '-5 minutes')");
         $stmt->execute();
         $stats['realtime'] = (int)$stmt->fetchColumn();
+
+        // Top páginas 404 (para a seção separada)
+        $stmt = $db->prepare("SELECT page_url, COUNT(*) as hits, COUNT(DISTINCT visitor_id) as unique_hits, MAX(created_at) as last_hit FROM analytics_pageviews WHERE created_at >= :from AND status = '404' GROUP BY page_url ORDER BY hits DESC LIMIT 15");
+        $stmt->execute([':from' => $dateFrom]);
+        $top404 = $stmt->fetchAll();
 
         $pageTitle = 'Analytics';
         $contentTemplate = BASE_PATH . '/templates/admin/analytics_content.php';

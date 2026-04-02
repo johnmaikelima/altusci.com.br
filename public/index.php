@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../config.php';
 
 // Inicializar/atualizar banco
-$migrationFlag = BASE_PATH . '/database/.migrated_v2';
+$migrationFlag = BASE_PATH . '/database/.migrated_v3';
 if (!file_exists(DB_PATH) || !file_exists($migrationFlag)) {
     require_once BASE_PATH . '/database/migrate.php';
     file_put_contents($migrationFlag, date('Y-m-d H:i:s'));
@@ -91,9 +91,9 @@ foreach ($routes as $route => $handler) {
     }
 }
 
-// Rastrear pageview (apenas GET público, não admin)
+// Rastrear pageview com status da rota
 if ($method === 'GET') {
-    track_pageview();
+    track_pageview('', $matchedRoute ? 'valid' : '404');
 }
 
 if ($matchedRoute) {

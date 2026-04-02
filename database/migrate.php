@@ -61,8 +61,12 @@ $db->exec("CREATE TABLE IF NOT EXISTS analytics_pageviews (
     device_type TEXT DEFAULT 'desktop',
     country TEXT DEFAULT '',
     duration INTEGER DEFAULT 0,
+    status TEXT DEFAULT 'valid',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 )");
+
+// Migrar coluna status se não existir
+try { $db->exec("ALTER TABLE analytics_pageviews ADD COLUMN status TEXT DEFAULT 'valid'"); } catch (\Exception $e) {}
 
 // Tabela de sessões de visitantes
 $db->exec("CREATE TABLE IF NOT EXISTS analytics_sessions (

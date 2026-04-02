@@ -5,17 +5,36 @@ function format_duration(int $seconds): string {
     $sec = $seconds % 60;
     return $min . 'min ' . $sec . 's';
 }
+$currentPeriod = $period ?? '30';
+$currentFilter = $filter ?? 'valid';
+function analyticsUrl(string $periodo, string $filtro): string {
+    return '/admin/analytics?periodo=' . $periodo . '&filtro=' . $filtro;
+}
 ?>
 
-<!-- Filtro de Período -->
-<div class="flex items-center justify-between mb-6">
-    <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">Período:</span>
-        <?php foreach ([7 => '7 dias', 14 => '14 dias', 30 => '30 dias', 90 => '90 dias', 365 => '1 ano'] as $days => $label): ?>
-        <a href="/admin/analytics?periodo=<?= $days ?>" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors <?= ($period ?? '30') == $days ? 'bg-blue-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
-            <?= $label ?>
-        </a>
-        <?php endforeach; ?>
+<!-- Filtros -->
+<div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+    <div class="flex items-center gap-4 flex-wrap">
+        <div class="flex items-center gap-2">
+            <span class="text-sm text-gray-500">Período:</span>
+            <?php foreach ([7 => '7 dias', 14 => '14 dias', 30 => '30 dias', 90 => '90 dias', 365 => '1 ano'] as $days => $label): ?>
+            <a href="<?= analyticsUrl($days, $currentFilter) ?>" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors <?= $currentPeriod == $days ? 'bg-blue-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                <?= $label ?>
+            </a>
+            <?php endforeach; ?>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="text-sm text-gray-500">Tráfego:</span>
+            <a href="<?= analyticsUrl($currentPeriod, 'valid') ?>" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors <?= $currentFilter === 'valid' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                Válido
+            </a>
+            <a href="<?= analyticsUrl($currentPeriod, '404') ?>" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors <?= $currentFilter === '404' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                404 <?php if ($stats['total_404'] > 0): ?><span class="ml-1 px-1.5 py-0.5 rounded-full text-xs <?= $currentFilter === '404' ? 'bg-red-500' : 'bg-red-100 text-red-600' ?>"><?= $stats['total_404'] ?></span><?php endif; ?>
+            </a>
+            <a href="<?= analyticsUrl($currentPeriod, 'all') ?>" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors <?= $currentFilter === 'all' ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                Tudo
+            </a>
+        </div>
     </div>
     <?php if ($stats['realtime'] > 0): ?>
     <div class="flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg">
@@ -111,7 +130,7 @@ function format_duration(int $seconds): string {
                 <div class="absolute bottom-full mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded-lg px-2 py-1 whitespace-nowrap z-10">
                     <?= date('d/m', strtotime($day['date'])) ?>: <?= $day['views'] ?> views, <?= $day['visitors'] ?> visitantes
                 </div>
-                <div class="w-full bg-blue-500 rounded-t-sm hover:bg-blue-600 transition-colors cursor-pointer" style="height: <?= max($height, 2) ?>%"></div>
+                <div class="w-full <?= $currentFilter === '404' ? 'bg-red-400 hover:bg-red-500' : 'bg-blue-500 hover:bg-blue-600' ?> rounded-t-sm transition-colors cursor-pointer" style="height: <?= max($height, 2) ?>%"></div>
                 <?php if (count($dailyData) <= 31): ?>
                 <span class="text-[10px] text-gray-400 rotate-0"><?= date('d/m', strtotime($day['date'])) ?></span>
                 <?php endif; ?>
@@ -128,25 +147,37 @@ function format_duration(int $seconds): string {
     <!-- Páginas Mais Visitadas -->
     <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
         <div class="p-6 border-b border-gray-100">
-            <h3 class="text-lg font-bold text-gray-800">Páginas Mais Visitadas</h3>
+            <h3 class="text-lg font-bold text-gray-800">
+                <?= $currentFilter === '404' ? 'Páginas 404 Mais Acessadas' : ($currentFilter === 'all' ? 'Todas as Páginas' : 'Páginas Mais Visitadas') ?>
+            </h3>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full">
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Página</th>
+                        <?php if ($currentFilter === 'all'): ?>
+                        <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Status</th>
+                        <?php endif; ?>
                         <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Views</th>
                         <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Únicos</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     <?php if (empty($topPages)): ?>
-                    <tr><td colspan="3" class="px-6 py-8 text-center text-gray-400">Sem dados.</td></tr>
+                    <tr><td colspan="4" class="px-6 py-8 text-center text-gray-400">Sem dados.</td></tr>
                     <?php else: foreach ($topPages as $page): ?>
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-3">
                             <span class="text-sm text-gray-800 font-medium"><?= e($page['page_url']) ?></span>
                         </td>
+                        <?php if ($currentFilter === 'all'): ?>
+                        <td class="px-6 py-3 text-center">
+                            <span class="px-2 py-0.5 text-xs rounded-full font-medium <?= ($page['status'] ?? 'valid') === '404' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' ?>">
+                                <?= ($page['status'] ?? 'valid') === '404' ? '404' : 'OK' ?>
+                            </span>
+                        </td>
+                        <?php endif; ?>
                         <td class="px-6 py-3 text-right text-sm text-gray-600"><?= number_format($page['views']) ?></td>
                         <td class="px-6 py-3 text-right text-sm text-gray-600"><?= number_format($page['unique_views']) ?></td>
                     </tr>
@@ -210,3 +241,47 @@ function format_duration(int $seconds): string {
         </div>
     </div>
 </div>
+
+<!-- Seção de Tráfego Inválido / 404 -->
+<?php if ($currentFilter !== '404' && !empty($top404)): ?>
+<div class="bg-white rounded-2xl border border-red-200 shadow-sm overflow-hidden">
+    <div class="p-6 border-b border-red-100 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-gray-800">Tráfego Inválido (404)</h3>
+                <p class="text-xs text-gray-500">Bots, crawlers ou links quebrados tentando acessar páginas inexistentes</p>
+            </div>
+        </div>
+        <a href="<?= analyticsUrl($currentPeriod, '404') ?>" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors">
+            Ver todos (<?= $stats['total_404'] ?>)
+        </a>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-red-50/50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">URL Tentada</th>
+                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Tentativas</th>
+                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">IPs Únicos</th>
+                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Último Acesso</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                <?php foreach (array_slice($top404, 0, 5) as $page404): ?>
+                <tr class="hover:bg-red-50/30">
+                    <td class="px-6 py-3">
+                        <span class="text-sm text-gray-800 font-medium"><?= e($page404['page_url']) ?></span>
+                    </td>
+                    <td class="px-6 py-3 text-right text-sm text-gray-600"><?= number_format($page404['hits']) ?></td>
+                    <td class="px-6 py-3 text-right text-sm text-gray-600"><?= number_format($page404['unique_hits']) ?></td>
+                    <td class="px-6 py-3 text-right text-sm text-gray-500"><?= date('d/m H:i', strtotime($page404['last_hit'])) ?></td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+<?php endif; ?>

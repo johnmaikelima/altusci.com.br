@@ -136,7 +136,7 @@ function detect_device(string $ua): string {
     return 'desktop';
 }
 
-function track_pageview(string $pageTitle = ''): void {
+function track_pageview(string $pageTitle = '', string $status = 'valid'): void {
     // Não rastrear bots, requests de admin, ou assets
     $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
     $uri = $_SERVER['REQUEST_URI'] ?? '/';
@@ -155,7 +155,7 @@ function track_pageview(string $pageTitle = ''): void {
     $device = detect_device($ua);
 
     // Registrar pageview
-    $stmt = $db->prepare("INSERT INTO analytics_pageviews (page_url, page_title, visitor_id, session_id, ip_address, user_agent, referrer, device_type) VALUES (:url, :title, :vid, :sid, :ip, :ua, :ref, :device)");
+    $stmt = $db->prepare("INSERT INTO analytics_pageviews (page_url, page_title, visitor_id, session_id, ip_address, user_agent, referrer, device_type, status) VALUES (:url, :title, :vid, :sid, :ip, :ua, :ref, :device, :status)");
     $stmt->execute([
         ':url' => parse_url($uri, PHP_URL_PATH),
         ':title' => $pageTitle,
@@ -165,6 +165,7 @@ function track_pageview(string $pageTitle = ''): void {
         ':ua' => substr($ua, 0, 500),
         ':ref' => $referrer,
         ':device' => $device,
+        ':status' => $status,
     ]);
 
     // Gerenciar sessão
