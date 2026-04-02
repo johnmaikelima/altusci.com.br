@@ -100,4 +100,11 @@ if ($adminExists == 0) {
     echo "Usuario admin criado: admin@altusci.com.br / admin123\n";
 }
 
+// Seed dos posts do blog se tabela estiver vazia
+$postCount = $db->query("SELECT COUNT(*) FROM blog_posts")->fetchColumn();
+if ($postCount == 0 && file_exists(__DIR__ . '/seed_blog.php')) {
+    require_once __DIR__ . '/seed_blog.php';
+    echo "Posts do blog inseridos.\n";
+}
+
 echo "Migracao concluida com sucesso!\n";
