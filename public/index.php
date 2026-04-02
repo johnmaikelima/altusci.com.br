@@ -11,6 +11,13 @@ $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $uri = rtrim($uri, '/') ?: '/';
 $method = $_SERVER['REQUEST_METHOD'];
 
+// Redirect 301 de URLs antigas .html para URLs limpas (preserva ranking SEO)
+if (str_ends_with($uri, '.html')) {
+    $newUri = str_replace('.html', '', $uri);
+    header('Location: ' . $newUri, true, 301);
+    exit;
+}
+
 // Rotas
 $routes = [
     // Frontend público
