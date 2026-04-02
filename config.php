@@ -16,15 +16,9 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Caminho base
 define('BASE_PATH', __DIR__);
+define('DB_PATH', BASE_PATH . '/database/altusci.db');
 define('SITE_NAME', 'Altustec - Suporte de TI e Manutenção em Guarulhos');
 define('SITE_URL', 'https://altusci.com.br');
-
-// Database config (MySQL)
-define('DB_HOST', '154.12.241.156');
-define('DB_PORT', '3306');
-define('DB_NAME', 'altu_sistema');
-define('DB_USER', 'altu_sistema');
-define('DB_PASS', 'REMOVED');
 
 // CSRF Token
 function csrf_token(): string {
@@ -73,15 +67,16 @@ function current_user(): ?array {
     return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
 }
 
-// Database connection (MySQL)
+// Database connection
 function get_db(): PDO {
     static $db = null;
     if ($db === null) {
-        $dsn = 'mysql:host=' . DB_HOST . ';port=' . DB_PORT . ';dbname=' . DB_NAME . ';charset=utf8mb4';
-        $db = new PDO($dsn, DB_USER, DB_PASS, [
+        $db = new PDO('sqlite:' . DB_PATH, null, null, [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         ]);
+        $db->exec('PRAGMA journal_mode=WAL');
+        $db->exec('PRAGMA foreign_keys=ON');
     }
     return $db;
 }
@@ -122,7 +117,7 @@ function get_setting(string $key, string $default = ''): string {
     static $cache = [];
     if (isset($cache[$key])) return $cache[$key];
     $db = get_db();
-    $stmt = $db->prepare('SELECT `value` FROM settings WHERE `key` = :key');
+    $stmt = $db->prepare('SELECT value FROM settings WHERE key = :key');
     $stmt->execute([':key' => $key]);
     $row = $stmt->fetch();
     $cache[$key] = $row ? $row['value'] : $default;
@@ -191,7 +186,7 @@ function track_pageview(string $pageTitle = '', string $status = 'valid'): void 
     $session = $existing->fetch();
 
     if ($session) {
-        $db->prepare("UPDATE analytics_sessions SET pages_viewed = pages_viewed + 1, last_activity = NOW(), duration = TIMESTAMPDIFF(SECOND, started_at, NOW()) WHERE id = :id")
+        $db->prepare("UPDATE analytics_sessions SET pages_viewed = pages_viewed + 1, last_activity = CURRENT_TIMESTAMP, duration = CAST((julianday(CURRENT_TIMESTAMP) - julianday(started_at)) * 86400 AS INTEGER) WHERE id = :id")
             ->execute([':id' => $session['id']]);
     } else {
         $db->prepare("INSERT INTO analytics_sessions (session_id, visitor_id, ip_address, user_agent, referrer, device_type) VALUES (:sid, :vid, :ip, :ua, :ref, :device)")
