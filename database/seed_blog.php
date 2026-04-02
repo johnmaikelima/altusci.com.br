@@ -5,10 +5,8 @@
  */
 require_once __DIR__ . '/../config.php';
 
-// Garantir que o banco existe
-if (!file_exists(DB_PATH)) {
-    require_once __DIR__ . '/migrate.php';
-}
+// Garantir que as tabelas existem
+require_once __DIR__ . '/migrate.php';
 
 $db = get_db();
 
@@ -1335,7 +1333,7 @@ $articles[] = [
 // INSERIR ARTIGOS NO BANCO
 // ============================================================
 
-$stmt = $db->prepare("INSERT OR IGNORE INTO blog_posts (title, slug, excerpt, content, meta_title, meta_description, meta_keywords, author, active, featured, created_at) VALUES (:title, :slug, :excerpt, :content, :meta_title, :meta_description, :meta_keywords, 'Altustec', 1, :featured, :created_at)");
+$stmt = $db->prepare("INSERT IGNORE INTO blog_posts (title, slug, excerpt, content, meta_title, meta_description, meta_keywords, author, active, featured, created_at) VALUES (:title, :slug, :excerpt, :content, :meta_title, :meta_description, :meta_keywords, 'Altustec', 1, :featured, :created_at)");
 
 $count = 0;
 $baseDate = new DateTime('2025-03-01');

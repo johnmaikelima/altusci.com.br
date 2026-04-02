@@ -94,7 +94,7 @@ class AdminAnalyticsController {
         $referrerDomains = array_merge(['Acesso Direto' => $directVisits], $referrerDomains);
 
         // Visitantes em tempo real (últimos 5 minutos)
-        $stmt = $db->prepare("SELECT COUNT(DISTINCT visitor_id) FROM analytics_pageviews WHERE created_at >= datetime('now', '-5 minutes')");
+        $stmt = $db->prepare("SELECT COUNT(DISTINCT visitor_id) FROM analytics_pageviews WHERE created_at >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)");
         $stmt->execute();
         $stats['realtime'] = (int)$stmt->fetchColumn();
 

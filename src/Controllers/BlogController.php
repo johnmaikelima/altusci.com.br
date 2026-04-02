@@ -58,7 +58,7 @@ class BlogController {
         $db->prepare("UPDATE blog_posts SET views = views + 1 WHERE id = :id")->execute([':id' => $post['id']]);
 
         // Posts relacionados
-        $related = $db->prepare("SELECT * FROM blog_posts WHERE active = 1 AND id != :id ORDER BY RANDOM() LIMIT 4");
+        $related = $db->prepare("SELECT * FROM blog_posts WHERE active = 1 AND id != :id ORDER BY RAND() LIMIT 4");
         $related->execute([':id' => $post['id']]);
         $relatedPosts = $related->fetchAll();
 

@@ -5,96 +5,96 @@ $db = get_db();
 
 // Tabela de usuários
 $db->exec("CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    email TEXT NOT NULL UNIQUE,
-    password TEXT NOT NULL,
-    role TEXT DEFAULT 'admin',
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(50) DEFAULT 'admin',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-)");
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
 // Tabela de categorias do blog
 $db->exec("CREATE TABLE IF NOT EXISTS blog_categories (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    slug TEXT NOT NULL UNIQUE,
-    description TEXT DEFAULT '',
-    active INTEGER DEFAULT 1,
-    sort_order INTEGER DEFAULT 0,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) NOT NULL UNIQUE,
+    description TEXT,
+    active TINYINT DEFAULT 1,
+    sort_order INT DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-)");
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
 // Migrar coluna category_id se tabela blog_posts já existe
-try { $db->exec("ALTER TABLE blog_posts ADD COLUMN category_id INTEGER DEFAULT NULL"); } catch (\Exception $e) {}
+try { $db->exec("ALTER TABLE blog_posts ADD COLUMN category_id INT DEFAULT NULL"); } catch (\Exception $e) {}
 
 // Tabela de posts do blog
 $db->exec("CREATE TABLE IF NOT EXISTS blog_posts (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    slug TEXT NOT NULL UNIQUE,
-    excerpt TEXT DEFAULT '',
-    content TEXT NOT NULL,
-    image TEXT DEFAULT '',
-    meta_title TEXT DEFAULT '',
-    meta_description TEXT DEFAULT '',
-    meta_keywords TEXT DEFAULT '',
-    author TEXT DEFAULT 'Altustec',
-    active INTEGER DEFAULT 1,
-    featured INTEGER DEFAULT 0,
-    views INTEGER DEFAULT 0,
-    category_id INTEGER DEFAULT NULL,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(500) NOT NULL,
+    slug VARCHAR(500) NOT NULL UNIQUE,
+    excerpt TEXT,
+    content LONGTEXT NOT NULL,
+    image VARCHAR(500) DEFAULT '',
+    meta_title VARCHAR(500) DEFAULT '',
+    meta_description TEXT,
+    meta_keywords TEXT,
+    author VARCHAR(255) DEFAULT 'Altustec',
+    active TINYINT DEFAULT 1,
+    featured TINYINT DEFAULT 0,
+    views INT DEFAULT 0,
+    category_id INT DEFAULT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (category_id) REFERENCES blog_categories(id) ON DELETE SET NULL
-)");
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
 // Tabela de analytics - visitantes e pageviews
 $db->exec("CREATE TABLE IF NOT EXISTS analytics_pageviews (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    page_url TEXT NOT NULL,
-    page_title TEXT DEFAULT '',
-    visitor_id TEXT NOT NULL,
-    session_id TEXT NOT NULL,
-    ip_address TEXT DEFAULT '',
-    user_agent TEXT DEFAULT '',
-    referrer TEXT DEFAULT '',
-    device_type TEXT DEFAULT 'desktop',
-    country TEXT DEFAULT '',
-    duration INTEGER DEFAULT 0,
-    status TEXT DEFAULT 'valid',
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    page_url VARCHAR(500) NOT NULL,
+    page_title VARCHAR(500) DEFAULT '',
+    visitor_id VARCHAR(64) NOT NULL,
+    session_id VARCHAR(128) NOT NULL,
+    ip_address VARCHAR(45) DEFAULT '',
+    user_agent VARCHAR(500) DEFAULT '',
+    referrer VARCHAR(1000) DEFAULT '',
+    device_type VARCHAR(20) DEFAULT 'desktop',
+    country VARCHAR(100) DEFAULT '',
+    duration INT DEFAULT 0,
+    status VARCHAR(20) DEFAULT 'valid',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-)");
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
 // Migrar coluna status se não existir
-try { $db->exec("ALTER TABLE analytics_pageviews ADD COLUMN status TEXT DEFAULT 'valid'"); } catch (\Exception $e) {}
+try { $db->exec("ALTER TABLE analytics_pageviews ADD COLUMN status VARCHAR(20) DEFAULT 'valid'"); } catch (\Exception $e) {}
 
 // Tabela de sessões de visitantes
 $db->exec("CREATE TABLE IF NOT EXISTS analytics_sessions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    session_id TEXT NOT NULL UNIQUE,
-    visitor_id TEXT NOT NULL,
-    ip_address TEXT DEFAULT '',
-    user_agent TEXT DEFAULT '',
-    referrer TEXT DEFAULT '',
-    device_type TEXT DEFAULT 'desktop',
-    pages_viewed INTEGER DEFAULT 1,
-    duration INTEGER DEFAULT 0,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    session_id VARCHAR(128) NOT NULL UNIQUE,
+    visitor_id VARCHAR(64) NOT NULL,
+    ip_address VARCHAR(45) DEFAULT '',
+    user_agent VARCHAR(500) DEFAULT '',
+    referrer VARCHAR(1000) DEFAULT '',
+    device_type VARCHAR(20) DEFAULT 'desktop',
+    pages_viewed INT DEFAULT 1,
+    duration INT DEFAULT 0,
     started_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    last_activity DATETIME DEFAULT CURRENT_TIMESTAMP
-)");
+    last_activity DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
 // Índices para performance
-$db->exec("CREATE INDEX IF NOT EXISTS idx_pageviews_created ON analytics_pageviews(created_at)");
-$db->exec("CREATE INDEX IF NOT EXISTS idx_pageviews_visitor ON analytics_pageviews(visitor_id)");
-$db->exec("CREATE INDEX IF NOT EXISTS idx_pageviews_page ON analytics_pageviews(page_url)");
-$db->exec("CREATE INDEX IF NOT EXISTS idx_sessions_visitor ON analytics_sessions(visitor_id)");
-$db->exec("CREATE INDEX IF NOT EXISTS idx_sessions_started ON analytics_sessions(started_at)");
+try { $db->exec("CREATE INDEX idx_pageviews_created ON analytics_pageviews(created_at)"); } catch (\Exception $e) {}
+try { $db->exec("CREATE INDEX idx_pageviews_visitor ON analytics_pageviews(visitor_id)"); } catch (\Exception $e) {}
+try { $db->exec("CREATE INDEX idx_pageviews_page ON analytics_pageviews(page_url(191))"); } catch (\Exception $e) {}
+try { $db->exec("CREATE INDEX idx_sessions_visitor ON analytics_sessions(visitor_id)"); } catch (\Exception $e) {}
+try { $db->exec("CREATE INDEX idx_sessions_started ON analytics_sessions(started_at)"); } catch (\Exception $e) {}
 
 // Tabela de configurações
 $db->exec("CREATE TABLE IF NOT EXISTS settings (
-    key TEXT PRIMARY KEY,
-    value TEXT DEFAULT ''
-)");
+    `key` VARCHAR(255) PRIMARY KEY,
+    `value` TEXT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
 // Configurações padrão
 $defaults = [
@@ -104,24 +104,20 @@ $defaults = [
     'footer_text' => '© ' . date('Y') . ' Altustec. Todos os direitos reservados.',
     'analytics_code' => '',
     'adsense_code' => 'ca-pub-2935633410371712',
-    // Logo
     'site_logo' => '/logo.png',
-    // Contato
     'contact_phone' => '(11) 98775-6034',
     'contact_whatsapp' => '5511987756034',
     'contact_email' => 'contato@altusci.com.br',
     'contact_address' => 'Estrada dos Vados, 551',
     'contact_city' => 'Guarulhos, SP',
-    // Horário
     'contact_hours' => 'Seg a Sex: 9h às 18h | Sáb: 9h às 13h',
-    // Redes sociais
     'social_instagram' => '',
     'social_facebook' => '',
     'social_youtube' => '',
     'social_linkedin' => '',
 ];
 
-$stmt = $db->prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (:key, :value)');
+$stmt = $db->prepare('INSERT IGNORE INTO settings (`key`, `value`) VALUES (:key, :value)');
 foreach ($defaults as $key => $value) {
     $stmt->execute([':key' => $key, ':value' => $value]);
 }

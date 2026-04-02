@@ -82,6 +82,6 @@ class SettingsController {
 
 function set_setting(string $key, string $value): void {
     $db = get_db();
-    $stmt = $db->prepare('INSERT INTO settings (key, value) VALUES (:key, :value) ON CONFLICT(key) DO UPDATE SET value = :value');
-    $stmt->execute([':key' => $key, ':value' => $value]);
+    $stmt = $db->prepare('INSERT INTO settings (`key`, `value`) VALUES (:key, :val) ON DUPLICATE KEY UPDATE `value` = :val2');
+    $stmt->execute([':key' => $key, ':val' => $value, ':val2' => $value]);
 }
