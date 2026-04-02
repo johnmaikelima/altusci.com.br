@@ -5,4 +5,4 @@ nixPkgs = ["php83", "php83Extensions.pdo", "php83Extensions.pdo_sqlite", "php83E
 cmds = ["mkdir -p /app/database", "mkdir -p /app/public/assets/img/uploads"]
 
 [start]
-cmd = "php-fpm & nginx -c /app/.nixpacks/nginx.conf"
+cmd = "php -S 0.0.0.0:8000 -t /app/public /app/public/router.php"
