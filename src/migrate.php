@@ -1,6 +1,11 @@
 <?php
 require_once __DIR__ . '/../config.php';
 
+// Garantir que o diretório database existe (para Persistent Storage)
+if (!is_dir(BASE_PATH . '/database')) {
+    mkdir(BASE_PATH . '/database', 0755, true);
+}
+
 $db = get_db();
 
 // Tabela de usuários
