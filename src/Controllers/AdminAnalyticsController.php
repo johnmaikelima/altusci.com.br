@@ -98,6 +98,11 @@ class AdminAnalyticsController {
         $stmt->execute();
         $stats['realtime'] = (int)$stmt->fetchColumn();
 
+        // Detalhes dos visitantes em tempo real (últimos 5 min)
+        $stmt = $db->prepare("SELECT p.page_url, p.ip_address, p.device_type, p.visitor_id, MAX(p.created_at) as last_seen FROM analytics_pageviews p WHERE p.created_at >= datetime('now', '-5 minutes') AND p.status = 'valid' GROUP BY p.visitor_id ORDER BY last_seen DESC");
+        $stmt->execute();
+        $realtimeVisitors = $stmt->fetchAll();
+
         // Top páginas 404 (para a seção separada)
         $stmt = $db->prepare("SELECT page_url, COUNT(*) as hits, COUNT(DISTINCT visitor_id) as unique_hits, MAX(created_at) as last_hit FROM analytics_pageviews WHERE created_at >= :from AND status = '404' GROUP BY page_url ORDER BY hits DESC LIMIT 15");
         $stmt->execute([':from' => $dateFrom]);

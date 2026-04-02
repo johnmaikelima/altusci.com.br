@@ -44,6 +44,38 @@ function analyticsUrl(string $periodo, string $filtro): string {
     <?php endif; ?>
 </div>
 
+<!-- Visitantes ao Vivo -->
+<?php if (!empty($realtimeVisitors)): ?>
+<div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-200 shadow-sm p-6 mb-6">
+    <div class="flex items-center gap-3 mb-4">
+        <span class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
+        <h3 class="text-lg font-bold text-gray-800">Ao Vivo - <?= count($realtimeVisitors) ?> visitante<?= count($realtimeVisitors) > 1 ? 's' : '' ?></h3>
+        <span class="text-xs text-gray-500">(últimos 5 minutos)</span>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <?php foreach ($realtimeVisitors as $rv):
+            $deviceIcon = match($rv['device_type']) {
+                'mobile' => 'M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z',
+                'tablet' => 'M12 18h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z',
+                default => 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+            };
+            $ago = time() - strtotime($rv['last_seen']);
+            $agoText = $ago < 60 ? $ago . 's atrás' : floor($ago / 60) . 'min atrás';
+        ?>
+        <div class="bg-white rounded-xl p-3 border border-green-100 flex items-center gap-3">
+            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="<?= $deviceIcon ?>"/></svg>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-800 truncate"><?= e($rv['page_url']) ?></p>
+                <p class="text-xs text-gray-500"><span class="font-mono"><?= e($rv['ip_address']) ?></span> · <?= $agoText ?></p>
+            </div>
+        </div>
+        <?php endforeach; ?>
+    </div>
+</div>
+<?php endif; ?>
+
 <!-- Stats Cards -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
     <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm">
