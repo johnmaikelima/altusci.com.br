@@ -20,11 +20,11 @@ define('SITE_NAME', 'Altustec - Suporte de TI e Manutenção em Guarulhos');
 define('SITE_URL', 'https://altusci.com.br');
 
 // Database config (MySQL)
-define('DB_HOST', getenv('DB_HOST') ?: '127.0.0.1');
-define('DB_PORT', getenv('DB_PORT') ?: '3306');
-define('DB_NAME', getenv('DB_NAME') ?: 'altusci');
-define('DB_USER', getenv('DB_USER') ?: 'altusci');
-define('DB_PASS', getenv('DB_PASS') ?: '');
+define('DB_HOST', '154.12.241.156');
+define('DB_PORT', '3306');
+define('DB_NAME', 'altu_sistema');
+define('DB_USER', 'altu_sistema');
+define('DB_PASS', 'REMOVED');
 
 // CSRF Token
 function csrf_token(): string {
