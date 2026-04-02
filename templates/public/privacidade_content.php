@@ -68,7 +68,7 @@
                 <li>Revogar o consentimento a qualquer momento</li>
                 <li>Obter informações sobre entidades com as quais seus dados foram compartilhados</li>
             </ul>
-            <p>Para exercer seus direitos, entre em contato pelo e-mail: <strong>contato@altusci.com.br</strong></p>
+            <p>Para exercer seus direitos, entre em contato pelo e-mail: <strong><?= e(get_setting('contact_email', 'contato@altusci.com.br')) ?></strong></p>
 
             <h2>6. Menores de Idade</h2>
             <p>Nosso site não é direcionado a menores de 18 anos. Não coletamos intencionalmente informações de menores de idade.</p>
@@ -79,9 +79,9 @@
             <h2>8. Contato</h2>
             <p>Se você tiver dúvidas sobre esta Política de Privacidade, entre em contato:</p>
             <ul>
-                <li><strong>E-mail:</strong> contato@altusci.com.br</li>
-                <li><strong>WhatsApp:</strong> (11) 98775-6034</li>
-                <li><strong>Endereço:</strong> Estrada dos Vados, 551 - Guarulhos, SP</li>
+                <li><strong>E-mail:</strong> <?= e(get_setting('contact_email', 'contato@altusci.com.br')) ?></li>
+                <li><strong>WhatsApp:</strong> <?= e(get_setting('contact_phone', '(11) 98775-6034')) ?></li>
+                <li><strong>Endereço:</strong> <?= e(get_setting('contact_address', 'Estrada dos Vados, 551')) ?> - <?= e(get_setting('contact_city', 'Guarulhos, SP')) ?></li>
             </ul>
         </div>
     </div>

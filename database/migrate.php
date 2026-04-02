@@ -104,6 +104,21 @@ $defaults = [
     'footer_text' => '© ' . date('Y') . ' Altustec. Todos os direitos reservados.',
     'analytics_code' => '',
     'adsense_code' => 'ca-pub-2935633410371712',
+    // Logo
+    'site_logo' => '/logo.png',
+    // Contato
+    'contact_phone' => '(11) 98775-6034',
+    'contact_whatsapp' => '5511987756034',
+    'contact_email' => 'contato@altusci.com.br',
+    'contact_address' => 'Estrada dos Vados, 551',
+    'contact_city' => 'Guarulhos, SP',
+    // Horário
+    'contact_hours' => 'Seg a Sex: 9h às 18h | Sáb: 9h às 13h',
+    // Redes sociais
+    'social_instagram' => '',
+    'social_facebook' => '',
+    'social_youtube' => '',
+    'social_linkedin' => '',
 ];
 
 $stmt = $db->prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (:key, :value)');

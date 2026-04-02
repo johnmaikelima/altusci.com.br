@@ -27,7 +27,7 @@
                             </div>
                             <div class="contact__item-content">
                                 <h3 class="contact__item-title">Endereço</h3>
-                                <p class="contact__item-text">Estrada dos Vados, 551<br>Guarulhos, SP</p>
+                                <p class="contact__item-text"><?= e(get_setting('contact_address', 'Estrada dos Vados, 551')) ?><br><?= e(get_setting('contact_city', 'Guarulhos, SP')) ?></p>
                             </div>
                         </div>
 
@@ -41,7 +41,8 @@
                             <div class="contact__item-content">
                                 <h3 class="contact__item-title">Email</h3>
                                 <p class="contact__item-text">
-                                    <a href="mailto:contato@altusci.com.br">contato@altusci.com.br</a>
+                                    <?php $_em = get_setting('contact_email', 'contato@altusci.com.br'); ?>
+                                    <a href="mailto:<?= e($_em) ?>"><?= e($_em) ?></a>
                                 </p>
                             </div>
                         </div>
@@ -55,7 +56,7 @@
                             <div class="contact__item-content">
                                 <h3 class="contact__item-title">WhatsApp</h3>
                                 <p class="contact__item-text">
-                                    <a href="https://wa.me/5511987756034" target="_blank">(11) 98775-6034</a>
+                                    <a href="https://wa.me/<?= e(get_setting('contact_whatsapp', '5511987756034')) ?>" target="_blank"><?= e(get_setting('contact_phone', '(11) 98775-6034')) ?></a>
                                 </p>
                             </div>
                         </div>

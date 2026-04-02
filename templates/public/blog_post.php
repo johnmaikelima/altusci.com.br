@@ -91,11 +91,11 @@
             <p class="cta__description">Nossa equipe está pronta para resolver qualquer problema técnico. Entre em contato!</p>
             <div class="cta__buttons">
                 <a href="/contato" class="button button--white">Fale Conosco</a>
-                <a href="https://wa.me/5511987756034" target="_blank" class="button button--outline-white">
+                <a href="https://wa.me/<?= e(get_setting('contact_whatsapp', '5511987756034')) ?>" target="_blank" class="button button--outline-white">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
                     </svg>
-                    (11) 98775-6034
+                    <?= e(get_setting('contact_phone', '(11) 98775-6034')) ?>
                 </a>
             </div>
         </div>

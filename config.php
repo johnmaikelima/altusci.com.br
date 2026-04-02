@@ -112,6 +112,18 @@ function format_date(string $date): string {
     return $d->format('d') . ' de ' . $meses[(int)$d->format('m') - 1] . ' de ' . $d->format('Y');
 }
 
+// Configurações do banco
+function get_setting(string $key, string $default = ''): string {
+    static $cache = [];
+    if (isset($cache[$key])) return $cache[$key];
+    $db = get_db();
+    $stmt = $db->prepare('SELECT value FROM settings WHERE key = :key');
+    $stmt->execute([':key' => $key]);
+    $row = $stmt->fetch();
+    $cache[$key] = $row ? $row['value'] : $default;
+    return $cache[$key];
+}
+
 // ============================================================
 // Analytics / Tracking
 // ============================================================

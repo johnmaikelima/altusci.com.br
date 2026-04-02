@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../config.php';
 
 // Inicializar/atualizar banco
-$migrationFlag = BASE_PATH . '/database/.migrated_v3';
+$migrationFlag = BASE_PATH . '/database/.migrated_v4';
 if (!file_exists(DB_PATH) || !file_exists($migrationFlag)) {
     require_once BASE_PATH . '/database/migrate.php';
     file_put_contents($migrationFlag, date('Y-m-d H:i:s'));
