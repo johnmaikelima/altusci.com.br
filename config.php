@@ -112,6 +112,75 @@ function format_date(string $date): string {
     return $d->format('d') . ' de ' . $meses[(int)$d->format('m') - 1] . ' de ' . $d->format('Y');
 }
 
+// ============================================================
+// Analytics / Tracking
+// ============================================================
+
+function get_visitor_id(): string {
+    if (!isset($_COOKIE['_alt_vid'])) {
+        $vid = bin2hex(random_bytes(16));
+        setcookie('_alt_vid', $vid, [
+            'expires' => time() + 86400 * 365 * 2,
+            'path' => '/',
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
+        $_COOKIE['_alt_vid'] = $vid;
+    }
+    return $_COOKIE['_alt_vid'];
+}
+
+function detect_device(string $ua): string {
+    if (preg_match('/Mobile|Android.*Mobile|iPhone|iPod/i', $ua)) return 'mobile';
+    if (preg_match('/iPad|Android(?!.*Mobile)|Tablet/i', $ua)) return 'tablet';
+    return 'desktop';
+}
+
+function track_pageview(string $pageTitle = ''): void {
+    // Não rastrear bots, requests de admin, ou assets
+    $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    $uri = $_SERVER['REQUEST_URI'] ?? '/';
+    if (preg_match('/bot|crawl|spider|slurp|Googlebot|Bingbot/i', $ua)) return;
+    if (str_starts_with($uri, '/admin')) return;
+    if (preg_match('/\.(css|js|png|jpg|jpeg|gif|ico|svg|webp|woff|woff2|xml)$/i', $uri)) return;
+
+    // Respeitar opt-out de cookies
+    if (isset($_COOKIE['_alt_consent']) && $_COOKIE['_alt_consent'] === 'denied') return;
+
+    $db = get_db();
+    $visitorId = get_visitor_id();
+    $sessionId = session_id();
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+    $referrer = $_SERVER['HTTP_REFERER'] ?? '';
+    $device = detect_device($ua);
+
+    // Registrar pageview
+    $stmt = $db->prepare("INSERT INTO analytics_pageviews (page_url, page_title, visitor_id, session_id, ip_address, user_agent, referrer, device_type) VALUES (:url, :title, :vid, :sid, :ip, :ua, :ref, :device)");
+    $stmt->execute([
+        ':url' => parse_url($uri, PHP_URL_PATH),
+        ':title' => $pageTitle,
+        ':vid' => $visitorId,
+        ':sid' => $sessionId,
+        ':ip' => $ip,
+        ':ua' => substr($ua, 0, 500),
+        ':ref' => $referrer,
+        ':device' => $device,
+    ]);
+
+    // Gerenciar sessão
+    $existing = $db->prepare("SELECT id, pages_viewed FROM analytics_sessions WHERE session_id = :sid");
+    $existing->execute([':sid' => $sessionId]);
+    $session = $existing->fetch();
+
+    if ($session) {
+        $db->prepare("UPDATE analytics_sessions SET pages_viewed = pages_viewed + 1, last_activity = CURRENT_TIMESTAMP, duration = CAST((julianday(CURRENT_TIMESTAMP) - julianday(started_at)) * 86400 AS INTEGER) WHERE id = :id")
+            ->execute([':id' => $session['id']]);
+    } else {
+        $db->prepare("INSERT INTO analytics_sessions (session_id, visitor_id, ip_address, user_agent, referrer, device_type) VALUES (:sid, :vid, :ip, :ua, :ref, :device)")
+            ->execute([':sid' => $sessionId, ':vid' => $visitorId, ':ip' => $ip, ':ua' => substr($ua, 0, 500), ':ref' => $referrer, ':device' => $device]);
+    }
+}
+
 // Tempo de leitura estimado
 function reading_time(string $content): int {
     $words = str_word_count(strip_tags($content));

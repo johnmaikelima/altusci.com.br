@@ -60,6 +60,12 @@ $routes = [
     // Admin Configurações
     'GET /admin/configuracoes'          => 'SettingsController@index',
     'POST /admin/configuracoes'         => 'SettingsController@update',
+
+    // Admin Analytics
+    'GET /admin/analytics'              => 'AdminAnalyticsController@index',
+
+    // Política de Privacidade
+    'GET /politica-de-privacidade'      => 'PublicController@privacidade',
 ];
 
 // Encontrar rota correspondente
@@ -81,6 +87,11 @@ foreach ($routes as $route => $handler) {
         }
         break;
     }
+}
+
+// Rastrear pageview (apenas GET público, não admin)
+if ($method === 'GET') {
+    track_pageview();
 }
 
 if ($matchedRoute) {

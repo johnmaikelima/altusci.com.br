@@ -147,8 +147,9 @@
                 </div>
             </div>
 
-            <div class="footer__bottom">
+            <div class="footer__bottom" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                 <p>&copy; <?= date('Y') ?> Altustec. Todos os direitos reservados.</p>
+                <a href="/politica-de-privacidade" style="color:#9ca3af; font-size:13px; text-decoration:none;">Política de Privacidade</a>
             </div>
         </div>
     </footer>
@@ -159,6 +160,31 @@
             <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
         </svg>
     </a>
+
+    <!-- Cookie Consent Banner -->
+    <div id="cookie-banner" style="display:none; position:fixed; bottom:0; left:0; right:0; background:#1a1a2e; color:#fff; padding:16px 24px; z-index:9999; box-shadow:0 -2px 10px rgba(0,0,0,0.2);">
+        <div style="max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+            <p style="margin:0; font-size:14px; line-height:1.5; flex:1; min-width:280px;">
+                Utilizamos cookies para melhorar sua experiência e analisar o tráfego do site. Ao continuar navegando, você concorda com o uso de cookies.
+                <a href="/politica-de-privacidade" style="color:#60a5fa; text-decoration:underline;">Política de Privacidade</a>
+            </p>
+            <div style="display:flex; gap:8px;">
+                <button onclick="setCookieConsent('accepted')" style="background:#002C87; color:#fff; border:none; padding:8px 20px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;">Aceitar</button>
+                <button onclick="setCookieConsent('denied')" style="background:transparent; color:#9ca3af; border:1px solid #4b5563; padding:8px 20px; border-radius:8px; font-size:13px; cursor:pointer;">Recusar</button>
+            </div>
+        </div>
+    </div>
+    <script>
+    (function() {
+        if (!document.cookie.includes('_alt_consent=')) {
+            document.getElementById('cookie-banner').style.display = 'block';
+        }
+    })();
+    function setCookieConsent(value) {
+        document.cookie = '_alt_consent=' + value + ';path=/;max-age=' + (365*24*60*60) + ';SameSite=Lax';
+        document.getElementById('cookie-banner').style.display = 'none';
+    }
+    </script>
 
     <script src="/script.js"></script>
 </body>

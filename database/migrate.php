@@ -48,6 +48,44 @@ $db->exec("CREATE TABLE IF NOT EXISTS blog_posts (
     FOREIGN KEY (category_id) REFERENCES blog_categories(id) ON DELETE SET NULL
 )");
 
+// Tabela de analytics - visitantes e pageviews
+$db->exec("CREATE TABLE IF NOT EXISTS analytics_pageviews (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    page_url TEXT NOT NULL,
+    page_title TEXT DEFAULT '',
+    visitor_id TEXT NOT NULL,
+    session_id TEXT NOT NULL,
+    ip_address TEXT DEFAULT '',
+    user_agent TEXT DEFAULT '',
+    referrer TEXT DEFAULT '',
+    device_type TEXT DEFAULT 'desktop',
+    country TEXT DEFAULT '',
+    duration INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+)");
+
+// Tabela de sessões de visitantes
+$db->exec("CREATE TABLE IF NOT EXISTS analytics_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL UNIQUE,
+    visitor_id TEXT NOT NULL,
+    ip_address TEXT DEFAULT '',
+    user_agent TEXT DEFAULT '',
+    referrer TEXT DEFAULT '',
+    device_type TEXT DEFAULT 'desktop',
+    pages_viewed INTEGER DEFAULT 1,
+    duration INTEGER DEFAULT 0,
+    started_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_activity DATETIME DEFAULT CURRENT_TIMESTAMP
+)");
+
+// Índices para performance
+$db->exec("CREATE INDEX IF NOT EXISTS idx_pageviews_created ON analytics_pageviews(created_at)");
+$db->exec("CREATE INDEX IF NOT EXISTS idx_pageviews_visitor ON analytics_pageviews(visitor_id)");
+$db->exec("CREATE INDEX IF NOT EXISTS idx_pageviews_page ON analytics_pageviews(page_url)");
+$db->exec("CREATE INDEX IF NOT EXISTS idx_sessions_visitor ON analytics_sessions(visitor_id)");
+$db->exec("CREATE INDEX IF NOT EXISTS idx_sessions_started ON analytics_sessions(started_at)");
+
 // Tabela de configurações
 $db->exec("CREATE TABLE IF NOT EXISTS settings (
     key TEXT PRIMARY KEY,

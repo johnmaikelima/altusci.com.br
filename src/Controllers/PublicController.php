@@ -43,6 +43,13 @@ class PublicController {
         include BASE_PATH . '/templates/layouts/public.php';
     }
 
+    public function privacidade(): void {
+        $pageTitle = 'Política de Privacidade - Altustec';
+        $pageDescription = 'Política de Privacidade da Altustec. Saiba como coletamos, usamos e protegemos suas informações pessoais.';
+        $contentTemplate = BASE_PATH . '/templates/public/privacidade_content.php';
+        include BASE_PATH . '/templates/layouts/public.php';
+    }
+
     public function sitemap(): void {
         header('Content-Type: application/xml; charset=utf-8');
 
@@ -62,6 +69,7 @@ class PublicController {
             ['/compramos-seu-notebook-usado', '0.8', 'monthly'],
             ['/como-criar-um-pendrive-bootavel-do-mac-no-windows', '0.6', 'yearly'],
             ['/blog', '0.9', 'daily'],
+            ['/politica-de-privacidade', '0.3', 'yearly'],
         ];
 
         foreach ($staticPages as $sp) {
