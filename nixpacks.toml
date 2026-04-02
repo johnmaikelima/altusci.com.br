@@ -1,0 +1,8 @@
+[phases.setup]
+nixPkgs = ["php83", "php83Extensions.pdo", "php83Extensions.pdo_sqlite", "php83Extensions.sqlite3", "php83Extensions.mbstring", "php83Extensions.session", "php83Extensions.fileinfo"]
+
+[phases.build]
+cmds = ["mkdir -p /app/database", "mkdir -p /app/public/assets/img/uploads"]
+
+[start]
+cmd = "php-fpm & nginx -c /app/.nixpacks/nginx.conf"
